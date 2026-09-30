@@ -82,3 +82,9 @@ and guarded real libSQL operations. No mocks of rate or storage logic are used.
 
 CI runs formatting, Clippy with warnings denied, and all tests on current stable
 Rust. Workstations only edit and orchestrate CI; no registry publication.
+
+Capacity pressure scans retain a conservative earliest recovery checkpoint.
+Repeated new-key denials before that checkpoint take constant work rather than
+rescanning every retained bucket. Insertion or replacement invalidates the
+checkpoint; successful activity can only delay recovery. All timing stays
+process-local and no key, member ID, or request is logged.
