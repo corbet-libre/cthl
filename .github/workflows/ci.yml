@@ -2,8 +2,9 @@ name: ci
 permissions:
   contents: read
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci
+  cancel-in-progress: false
+  queue: max
 jobs:
   resolve:
     runs-on: ubuntu-latest
@@ -14,19 +15,24 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha || github.sha }}
         persist-credentials: false
     - uses: dtolnay/rust-toolchain@stable
+    - name: Validate the committed dependency snapshot before refreshing
+      run: python3 .github/check-first-party.py
     - name: Resolve one fresh dependency snapshot
-      run: |-
-        cargo update
+      run: 'cargo update
+
         rustc --version > resolver.txt
+
         cargo --version >> resolver.txt
+
         date -u +%FT%TZ >> resolver.txt
-        sha256sum Cargo.lock >> resolver.txt
+
+        sha256sum Cargo.lock >> resolver.txt'
     - uses: actions/upload-artifact@v4
       with:
         name: resolved-lock
-        path: |-
-          Cargo.lock
-          resolver.txt
+        path: 'Cargo.lock
+
+          resolver.txt'
         retention-days: 7
   check:
     runs-on: ubuntu-latest
@@ -43,17 +49,32 @@ jobs:
       with:
         components: rustfmt, clippy
     - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: true
     - run: rustc --version
     - name: Resolve and record dependencies
       run: cargo metadata --locked --format-version 1 > dependency-metadata.json
     - uses: actions/upload-artifact@v4
       with:
         name: dependency-snapshot
-        path: |
-          Cargo.lock
+        path: 'Cargo.lock
+
           dependency-metadata.json
+
+          '
         retention-days: 7
     - run: cargo fmt --all --check
+      id: fmt
+    - name: Retain the exact runner formatting patch
+      if: failure() && steps.fmt.outcome == 'failure'
+      run: 'cargo fmt --all
+
+        git diff --binary > "$RUNNER_TEMP/rustfmt.patch"'
+    - uses: actions/upload-artifact@v4
+      if: failure() && steps.fmt.outcome == 'failure'
+      with:
+        name: rustfmt-patch
+        path: ${{ runner.temp }}/rustfmt.patch
     - run: cargo clippy --locked --all-targets -- -D warnings
     - run: cargo test --locked
     needs:
@@ -96,30 +117,41 @@ jobs:
     - uses: Swatinem/rust-cache@v2
       with:
         prefix-key: coverage
+        cache-on-failure: true
     - uses: taiki-e/install-action@v2
       with:
         tool: cargo-llvm-cov
-    - run: |-
-        rustc --version
-        cargo llvm-cov --version
+    - run: 'rustc --version
+
+        cargo llvm-cov --version'
     - name: Measure real native round trips and failure paths
-      run: cargo llvm-cov --locked --workspace --all-features --branch --no-cfg-coverage --no-cfg-coverage-nightly
-        --ignore-filename-regex '/tests/' --json --output-path coverage.json
+      run: cargo llvm-cov --locked --workspace --all-features --branch --no-cfg-coverage --no-cfg-coverage-nightly --ignore-filename-regex '/tests/' --json --output-path coverage.json
+    - name: Export exact line and branch locations
+      run: cargo llvm-cov report --locked --branch --ignore-filename-regex '/tests/' --lcov --output-path coverage.lcov
+    - name: Cross-check emitted line inventory independently
+      run: cargo llvm-cov report --locked --branch --ignore-filename-regex '/tests/' --text --output-path coverage.txt
     - name: Require complete line and branch coverage
-      run: python3 .github/check-coverage.py coverage.json
+      run: 'python3 .github/test-source-coverage.py
+
+        python3 .github/check-source-coverage.py coverage.lcov coverage.json coverage.txt'
     - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: coverage
-        path: |-
-          coverage.json
+        path: 'coverage.json
+
+          coverage.lcov
+
+          coverage.txt
+
           Cargo.lock
-          resolver.txt
+
+          resolver.txt'
         retention-days: 7
 'on':
   push:
     branches:
-    - '**'
+    - main
   pull_request: null
   workflow_dispatch: null
 env:
