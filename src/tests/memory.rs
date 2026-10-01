@@ -101,7 +101,10 @@ fn earlier_recovery_from_new_or_replaced_buckets_is_not_skipped() {
 #[test]
 fn poisoned_state_refuses_admission_and_pruning() {
     let store = Arc::new(MemoryStore::new(NonZeroUsize::new(2).unwrap()));
-    assert_eq!(store.check_now(request(b"opaque", 100)), Ok(Decision::Allowed));
+    assert_eq!(
+        store.check_now(request(b"opaque", 100)),
+        Ok(Decision::Allowed)
+    );
     let other = store.clone();
     let result = std::thread::spawn(move || {
         let _guard = other.state.lock().unwrap();
