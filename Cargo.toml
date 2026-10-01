@@ -14,7 +14,7 @@ include = ["Cargo.toml", "src/**", "docs/**", "README.md", "LICENSE", "LICENSE.m
 governor = { version = "0.10.4", default-features = false, features = ["std"] }
 
 [dev-dependencies]
-crlt = { git = "https://github.com/corbet-foss/crlt", rev = "80dc046d6ab53b3ea530c45bf3d7038c8b2c61b2" }
+crlt = { git = "https://github.com/corbet-foss/crlt", branch = "main" }
 tempfile = "3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
 
