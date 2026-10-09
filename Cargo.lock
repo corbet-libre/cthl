@@ -236,7 +236,7 @@ dependencies = [
 [[package]]
 name = "crlt"
 version = "0.0.0"
-source = "git+https://git.corbet.ch/corbet-foss/crlt?branch=main#ad4aaaa8fee61dea4858b3ed6be496b67db7f856"
+source = "git+https://git.corbet.ch/corbet-foss/crlt?branch=main#a66a188be394b77b07f3a00483937edf7c791cf7"
 dependencies = [
  "deadpool",
  "libsql",
