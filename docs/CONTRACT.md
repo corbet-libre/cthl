@@ -81,7 +81,7 @@ actions, policy conflicts, clock regression/overflow, backend failure, privacy,
 and guarded real libSQL operations. No mocks of rate or storage logic are used.
 
 CI runs formatting, Clippy with warnings denied, and all tests on current stable
-Rust. Workstations only edit and orchestrate CI; no registry publication.
+Rust. No registry publication.
 
 Capacity pressure scans retain a conservative earliest recovery checkpoint.
 Repeated new-key denials before that checkpoint take constant work rather than
