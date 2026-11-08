@@ -148,12 +148,7 @@ jobs:
 
           resolver.txt'
         retention-days: 7
-'on':
-  push:
-    branches:
-    - main
-  pull_request: null
-  workflow_dispatch: null
+on: [workflow_dispatch]
 env:
   CARGO_BUILD_JOBS: 2
   CARGO_TERM_COLOR: always
