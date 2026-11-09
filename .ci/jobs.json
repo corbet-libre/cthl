@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "generator": "ccid render v1",
-  "tool_revision": "bd9aff07073185fb0a3503bab331aedefb6d8fd2",
-  "manifest_sha256": "7ebb7969be577d6617492b4166d0d062c08a875ded4242d4acd88266ff82b8b0",
+  "tool_revision": "",
+  "manifest_sha256": "9a5c18fb284d27fd20a5757fd39af126c5c88d091a8c9ca8c61101275d3e2f73",
   "jobs": {
     "verify": {
       "job": "verify",
@@ -20,7 +20,8 @@
       "events": [
         "push",
         "manual"
-      ]
+      ],
+      "archive_inputs": true
     },
     "verify-pr": {
       "job": "verify-pr",
@@ -37,7 +38,8 @@
       "runs_on": "light",
       "events": [
         "pull_request"
-      ]
+      ],
+      "archive_inputs": true
     }
   }
 }

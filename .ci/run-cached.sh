@@ -24,12 +24,11 @@ mkdir -p .moon/cache
 tool_source=github:NixOS/nixpkgs/b7c2ada94fe99c15b0dbcf4d11fd7850b957a436
 tool_paths=$(nix build --no-link --print-out-paths "$tool_source#moon" "$tool_source#proto" "$tool_source#python3" "$tool_source#cargo-deny" "$tool_source#cargo-llvm-cov")
 for path in $tool_paths; do PATH="$path/bin:$PATH"; done
-export PROTO_HOME="$toolchains/proto" RUSTUP_HOME="$toolchains/rustup"
-shared_cargo_home=${CARGO_HOME:-}
-export CARGO_HOME="$toolchains/cargo" MOON_HOME="$state/moon-home"
+export PROTO_HOME="$toolchains/proto"
+export MOON_HOME="$state/moon-home"
 export PROTO_AUTO_CLEAN=false PROTO_TELEMETRY=false PROTO_YES=true
 export RUSTUP_INIT_SKIP_PATH_CHECK=yes RUSTUP_TOOLCHAIN=stable
-export PATH="$(dirname "$CCID_BIN"):$CARGO_HOME/bin:$PROTO_HOME/shims:$PROTO_HOME/bin:$PATH"
+export PATH="$(dirname "$CCID_BIN"):$PROTO_HOME/shims:$PROTO_HOME/bin:$PATH"
 export CI_JOBS="${CI_JOBS:-2}" CARGO_BUILD_JOBS="${CI_JOBS:-2}"
 export RUST_TEST_THREADS="${CI_TEST_THREADS:-2}"
 export CARGO_NET_GIT_FETCH_WITH_CLI=true
@@ -44,20 +43,17 @@ export "GIT_CONFIG_VALUE_$((git_config_base + 1))=https://github.com/corbet-foss
 exec 8>"$toolchains/install.lock"
 flock -w "${CI_TIMEOUT:-2700}" 8
 mkdir -p "$CARGO_HOME"
-if [[ ! -e $CARGO_HOME/registry && -n $shared_cargo_home && -d $shared_cargo_home/registry ]]; then
-  ln -s "$shared_cargo_home/registry" "$CARGO_HOME/registry"
-fi
 # Repeated `proto install rust stable` can replace an installed toolchain.
 # Reuse a working provisioned stable compiler; explicit upgrades are separate.
-if ! "$CARGO_HOME/bin/rustup" run stable rustc --version >/dev/null 2>&1; then
+if ! rustup run stable rustc --version >/dev/null 2>&1; then
   proto install rust stable
 fi
-if ! "$CARGO_HOME/bin/rustup" run nightly rustc --version >/dev/null 2>&1; then
-  "$CARGO_HOME/bin/rustup" toolchain install nightly --component llvm-tools-preview
-elif ! "$CARGO_HOME/bin/rustup" component list --toolchain nightly --installed 2>/dev/null | grep -q '^llvm-tools-preview'; then
-  "$CARGO_HOME/bin/rustup" component add llvm-tools-preview --toolchain nightly
+if ! rustup run nightly rustc --version >/dev/null 2>&1; then
+  rustup toolchain install nightly --component llvm-tools-preview
+elif ! rustup component list --toolchain nightly --installed 2>/dev/null | grep -q '^llvm-tools-preview'; then
+  rustup component add llvm-tools-preview --toolchain nightly
 fi
-cargo_bin=$("$CARGO_HOME/bin/rustup" which --toolchain stable cargo)
+cargo_bin=$(rustup which --toolchain stable cargo)
 test -x "$cargo_bin"
 export PATH="$(dirname "$cargo_bin"):$PATH"
 export CCID_SOURCE_REVISION="$CI_COMMIT_SHA"
