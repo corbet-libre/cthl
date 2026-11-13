@@ -3,7 +3,15 @@ project = "cthl"
 
 [checks.verify]
 kind = "commands"
-commands = [["bash", ".ci/verify.sh"]]
+fleet = true
+commands = [
+  ["ccid", "first-party"],
+  ["bash", "-c", "cargo metadata --locked --format-version 1 > dependency-metadata.json"],
+  ["cargo", "fmt", "--all", "--check"],
+  ["cargo", "clippy", "--locked", "--all-targets", "--", "-D", "warnings"],
+  ["cargo", "test", "--locked"],
+  ["ccid", "coverage", "run"],
+]
 cache_tools = [["rustc", "-vV"], ["cargo", "--version"], ["python3", "--version"], ["rustup", "run", "nightly", "rustc", "-vV"], ["rustup", "run", "nightly", "cargo", "llvm-cov", "--version"], ["clang", "--version"], ["pkg-config", "--version"]]
 cache_env = ["LIBCLANG_PATH", "PKG_CONFIG_PATH", "NIX_CFLAGS_COMPILE", "NIX_LDFLAGS", "LD_LIBRARY_PATH"]
 cache_outputs = ["coverage.json", "coverage.lcov", "coverage.txt", "dependency-metadata.json"]
@@ -32,3 +40,5 @@ workflow = "pr"
 command = ["bash", ".ci/run-cached.sh"]
 
 [check_shell]
+
+[coverage]
