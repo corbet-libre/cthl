@@ -42,3 +42,6 @@ command = ["bash", ".ci/run-cached.sh"]
 [check_shell]
 
 [coverage]
+
+[security]
+dependencies = "cargo-deny"
