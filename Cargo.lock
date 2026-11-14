@@ -185,7 +185,7 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 [[package]]
 name = "crlt"
 version = "0.0.0"
-source = "git+https://git.corbet.ch/corbet-libre/crlt.git?branch=main#d80ddf00284fc200e7522ad627a723afa1786ed0"
+source = "git+https://git.corbet.ch/corbet-libre/crlt.git?branch=main#64f93fed6b80e34814fec2f840eed100e33bc403"
 dependencies = [
  "deadpool",
  "libsql",
